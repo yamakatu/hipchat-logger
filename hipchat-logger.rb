@@ -8,7 +8,7 @@ require 'optparse'
 # Define log file
 log = Logger.new('log/hipchat_logger.log', 'daily')
 
-params = ARGV.getopts("l:")
+params = ARGV.getopts("l:", "d:")
 
 case params["l"]
 when 'debug'
@@ -40,11 +40,8 @@ end
 
 log.debug "Successfully connected to HipChat"
 
-# DATES
-today = Time.now
-yesterday = today - (24*60*60)
+log_date = (params["d"] ? params["d"] : Time.now.strftime('%Y-%m-%d'))
 
-log_date = yesterday.strftime('%Y-%m-%d')
 log.info "Getting history of all rooms for #{log_date}"
 
 # Loop through HipChat Rooms
@@ -60,6 +57,7 @@ client.rooms.each do |room|
 
       # log output using erb template
       log_file.write log_output.result(message.get_binding)
+      log.debug "Logged message from '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
     end
     log.debug "Logged #{room.message_count} messages for '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
   rescue Exception => e

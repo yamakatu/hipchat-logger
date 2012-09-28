@@ -4,7 +4,9 @@ require 'ostruct'
 module HipChat
   class UnknownRoom         < StandardError; end
   class Unauthorized        < StandardError; end
+  class BadRequest          < StandardError; end
   class UnknownResponseCode < StandardError; end
+
   
   require_relative 'hipchat/client'
   require_relative 'hipchat/room'

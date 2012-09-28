@@ -1,11 +1,10 @@
 module HipChat
   class Message < OpenStruct
-    include HTTParty
+    require 'date'
 
-    base_uri 'https://api.hipchat.com/v1/rooms'
-
-    def initialize(token, params)
-      @token = token
+    def initialize(room_name, room_id, params)
+      @room_name = room_name
+      @room_id = room_id
 
       super(params)
     end
@@ -20,7 +19,8 @@ module HipChat
     #
     # #<HipChat::Message date="2012-09-27T10:04:02-0700", from={"name"=>"Will Borchardt", "user_id"=>168653}, file={"name"=>"garry.png", "size"=>10757, "url"=>"http://uploads.hipchat.com/27240/168653/qaof47agndcduqs/garry.png"}, message="so nice and compact :)">
 
-    attr_reader :author_netid
+    attr_reader :author_netid, :room_name, :room_id
+
     def author_name
       @author_name  ||= self.from["name"]
     end
@@ -33,6 +33,10 @@ module HipChat
 
     def author_netid=(netid)
       @author_netid = netid
+    end
+
+    def local_time
+      @local_time ||= DateTime.strptime(self.date).to_time
     end
 
     # REQUIRED FOR ERB

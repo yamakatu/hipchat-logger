@@ -65,41 +65,11 @@ module HipChat
       case response.code
       when 200; true
       when 404
-        raise UnknownRoom,  "Unknown room: `#{room_id}'"
+        raise UnknownRoom,  "Unknown room: '#{room_id}'"
       when 401
-        raise Unauthorized, "Access denied to room `#{room_id}'"
+        raise Unauthorized, "Access denied to room '#{room_id}'"
       else
-        raise UnknownResponseCode, "Unexpected #{response.code} for room `#{room_id}'"
-      end
-    end
-    
-    def history(options_or_notify = {})
-      options = if options_or_notify == true or options_or_notify == false
-        warn "DEPRECATED: Specify notify flag as an option (e.g., :notify => true)"
-        { :notify => options_or_notify }
-      else
-        options_or_notify || {}
-      end
-
-      options = { :color => 'yellow', :notify => false }.merge options
-
-      response = self.class.get('/history',
-        :query => { 
-          :auth_token     => @token,
-          :room_id        => room_id,
-          :date           => Time.now.strftime('%Y-%m-%d'),
-          :timezone       => Time.now.zone
-        }
-      )
-
-      case response.code
-      when 200; response.parsed_response["messages"]
-      when 404
-        raise UnknownRoom,  "Unknown room: `#{room_id}'"
-      when 401
-        raise Unauthorized, "Access denied to room `#{room_id}'"
-      else
-        raise UnknownResponseCode, "Unexpected #{response.code} for room `#{room_id}'"
+        raise UnknownResponseCode, "Unexpected #{response.code} for room '#{room_id}'"
       end
     end
 
@@ -118,13 +88,15 @@ module HipChat
 
         case response.code
         when 200
-          @messages = response.parsed_response['messages'].map { |m| Message.new(@token, m) }
+          @messages = response.parsed_response['messages'].map { |m| Message.new(self.name, self.room_id, m) }
         when 404
-          raise UnknownRoom,  "Unknown room: `#{room_id}'"
+          raise UnknownRoom,  "Unknown room: '#{room_id}' -- #{response.parsed_response['error']['message']}"
         when 401
-          raise Unauthorized, "Access denied to room `#{room_id}'"
+          raise Unauthorized, "Access denied to room '#{room_id}' -- #{response.parsed_response['error']['message']}"
+        when 400
+          raise BadRequest, "Bad Request for room '#{room_id}' -- #{response.parsed_response['error']['message']}"
         else
-          raise UnknownResponseCode, "Unexpected #{response.code} for room `#{room_id}'"
+          raise UnknownResponseCode, "Unexpected #{response.code} for room '#{room_id}' -- #{response.parsed_response['error']['message']}"
         end
       end
     end
