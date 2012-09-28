@@ -7,6 +7,7 @@ require 'optparse'
 
 # Define log file
 log = Logger.new('log/hipchat_logger.log', 'daily')
+log.info "Starting hipchat-logger..."
 
 params = ARGV.getopts("l:", "d:")
 
@@ -14,7 +15,7 @@ case params["l"]
 when 'debug'
   log.level = Logger::DEBUG
 when 'error'
-  log.level = Logger::ERROR
+  log.level = Logger::ERR
 when 'warn'
   log.level = Logger::WARN
 else
@@ -31,7 +32,7 @@ log.debug "Found and loaded config file"
 log_output = ERB.new(File.read('views/splunk.erb'))
 log.debug "Found and loaded ERB template file"
 
-# Connect to HipChat
+# STEP 1 - Connect to HipChat #############
 begin
   client = HipChat::Client.new(config["hipchat"]["api"]["key"])
 rescue Exception => e
@@ -42,26 +43,37 @@ log.debug "Successfully connected to HipChat"
 
 log_date = (params["d"] ? params["d"] : Time.now.strftime('%Y-%m-%d'))
 
-log.info "Getting history of all rooms for #{log_date}"
+@rooms = []
 
-# Loop through HipChat Rooms
-client.rooms.each do |room|
+# STEP 2 - Get a list of all the rooms #############
+@rooms = client.rooms
+log.info "Getting history of all #{@rooms.count} room(s) for #{log_date}..."
+@rooms.each do |room|
   log.debug "Getting history of room=#{room.name}, room_id=#{room.room_id}, date=#{log_date}"
-  # Open room log file for writing
-  log_file = File.open("log/hipchat_room_id_#{room.room_id}_#{log_date}.log", 'w')
 
+  # Get messages for this room
   begin
-    room.messages(log_date).each do |message|
+    room_messages = []
+    room_messages = room.messages(log_date)
+  rescue Exception => e
+    log.debug e.message
+  end
+
+  #log messages
+  if room_messages.count > 0
+    # Open room log file for writing
+    log_file = File.open("log/hipchat_room_id_#{room.room_id}_#{log_date}.log", 'w')
+    
+    room_messages.each do |message|
       # Look up netid
       message.author_netid = config["user_netid_mappings"][message.author.downcase.gsub(/\s/,'')] if config["user_netid_mappings"].has_key? message.author.downcase.gsub(/\s/,'')
 
       # log output using erb template unless the user is supposed to be ignored
       log_file.write log_output.result(message.get_binding) unless config["ignored_users"].include?(message.user_id) || config["ignored_users"].include?(message.author_id)
     end
-    log.debug "Logged #{room.message_count} messages for '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
-  rescue Exception => e
-    log.debug "Logged 0 messages for '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
-    log.warn e.message
+    log.info "Logged #{room.message_count} messages for '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
+  else
+    log.debug "There were 0 messages found for '#{room.name}' (room_id=#{room.room_id}) on #{log_date}.}"
   end
 end
 
