@@ -2,6 +2,10 @@ hipchat:
   api:
     key: '12345678903sdf87gasdfo8gdf'
 
-user_mappings:
-  firstlast: firstl
+user_netid_mappings:
+  username: netid # Must have at least one entry
+
+ignored_users: # Must have at least one entry
+  - api # Must have at least one entry
+  - Bob
 

@@ -53,10 +53,10 @@ client.rooms.each do |room|
   begin
     room.messages(log_date).each do |message|
       # Look up netid
-      message.author_netid = config["user_mappings"][message.author.downcase.gsub(/\s/,'')] if config["user_mappings"].has_key? message.author.downcase.gsub(/\s/,'')
+      message.author_netid = config["user_netid_mappings"][message.author.downcase.gsub(/\s/,'')] if config["user_netid_mappings"].has_key? message.author.downcase.gsub(/\s/,'')
 
-      # log output using erb template
-      log_file.write log_output.result(message.get_binding)
+      # log output using erb template unless the user is supposed to be ignored
+      log_file.write log_output.result(message.get_binding) unless config["ignored_users"].include?(message.user_id) || config["ignored_users"].include?(message.author_id)
     end
     log.debug "Logged #{room.message_count} messages for '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
   rescue Exception => e

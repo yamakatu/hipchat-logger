@@ -1,1 +1,1 @@
-[<%= local_time %>] room=<%= room_name %>, room_id=<%= room_id %>, <% if author_netid %>netid=<%= author_netid %>, <% end %>name=<%= author%>, message=<%= message.gsub(/\n/,'\n') %> <% if file %>attachment=<%= file.inspect %><% end %>
+[<%= local_time %>] room=<%= room_name %>, room_id=<%= room_id %>, <% if author_netid %>netid=<%= author_netid %>, <% end %>name=<%= author%>, user_id=<%= author_id %>, message=<%= message.gsub(/\n/,'\n') %> <% if file %>attachment=<%= file.inspect %><% end %>
