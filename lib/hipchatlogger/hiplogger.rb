@@ -8,11 +8,9 @@ module HipChatLogger
 
     def initialize()
       @config = YAML.load(open(File.expand_path('../../../config/config.yml', __FILE__)))
+      @params ||= ARGV.getopts("l:", "d:")
       
-      set_params
-      @log = Logger.new('log/hipchat_logger.log', 'daily') # TODO: Create log directory if it doesn't exist
-
-      set_log_level
+      initialize_logging
       set_hipchat_date
       
       @log.info "Starting hipchat-logger..."
@@ -73,11 +71,13 @@ module HipChatLogger
 
     private
 
-    def set_params
-      @params ||= ARGV.getopts("l:", "d:")
-    end
 
-    def set_log_level
+    def initialize_logging
+
+      Dir.mkdir('log') unless Dir.exist?('log')
+
+      @log = Logger.new('log/hipchat_logger.log', 'daily') # TODO: Create log directory if it doesn't exist
+
       case @params["l"]
       when 'debug'
         @log.level = Logger::DEBUG
