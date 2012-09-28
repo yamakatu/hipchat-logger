@@ -60,6 +60,7 @@ log.info "Getting history of all #{@rooms.count} room(s) for #{log_date}..."
   # Get messages for this room
   begin
     room_messages = []
+    skipped_messages = 0
     room_messages = room.messages(log_date)
   rescue Exception => e
     log.debug e.message
@@ -75,9 +76,14 @@ log.info "Getting history of all #{@rooms.count} room(s) for #{log_date}..."
       message.author_netid = config["user_netid_mappings"][message.author.downcase.gsub(/\s/,'')] if config["user_netid_mappings"].has_key? message.author.downcase.gsub(/\s/,'')
 
       # log output using erb template unless the user is supposed to be ignored
-      log_file.write log_output.result(message.get_binding) unless config["ignored_users"].include?(message.user_id) || config["ignored_users"].include?(message.author_id)
+      if config["ignored_users"].include?(message.user_id) || config["ignored_users"].include?(message.author_id)
+        log.debug "Skipping Message -- Matched '#{message.author}' or '#{message.author_id}' to the config['ignored_users'] list."
+        skipped_messages = skipped_messages + 1
+      else
+        log_file.write log_output.result(message.get_binding)
+      end
     end
-    log.info "Logged #{room.message_count} messages for '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
+    log.info "Logged #{room.message_count - skipped_messages} messages for '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
   else
     log.debug "There were 0 messages found for '#{room.name}' (room_id=#{room.room_id}) on #{log_date}.}"
   end
