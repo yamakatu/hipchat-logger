@@ -128,5 +128,9 @@ module HipChat
         end
       end
     end
+
+    def message_count
+      @messages.count
+    end
   end
 end
