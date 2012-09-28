@@ -57,7 +57,6 @@ client.rooms.each do |room|
 
       # log output using erb template
       log_file.write log_output.result(message.get_binding)
-      log.debug "Logged message from '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
     end
     log.debug "Logged #{room.message_count} messages for '#{room.name}' (room_id=#{room.room_id}) to #{log_file.path}"
   rescue Exception => e
