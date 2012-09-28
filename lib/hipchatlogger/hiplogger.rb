@@ -91,8 +91,17 @@ module HipChatLogger
     end
 
     def set_hipchat_date
-      # use what is passed through '-d' if given -- Example: '-d 2012-09-27'
-      @config["log_date"] = (@params["d"] ? @params["d"] : Time.now.strftime('%Y-%m-%d'))
+      # use what is passed through '-d' if given -- Example: '-d 2012-09-27' or '-d yesterday'
+      if @params["d"]
+        case @params["d"]
+        when "yesterday"
+          @config["log_date"] = (Time.now - (24*60*60)).strftime('%Y-%m-%d')
+        else
+          @config["log_date"] = @params["d"]
+        end
+      else
+        @config["log_date"] = Time.now.strftime('%Y-%m-%d')
+      end
     end
 
     def connect_to_hipchat
