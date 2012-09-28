@@ -1,0 +1,7 @@
+hipchat:
+  api:
+    key: '12345678903sdf87gasdfo8gdf'
+
+user_mappings:
+  firstlast: firstl
+

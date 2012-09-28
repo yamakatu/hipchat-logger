@@ -1,0 +1,1 @@
+[<%= date %>] <% if author_netid %>netid=<%= author_netid %>, <% end %>name=<%= author%>, message=<%= message.gsub(/\n/,'\n') %> <% if file %>attachment=<%= file.inspect %><% end %>
