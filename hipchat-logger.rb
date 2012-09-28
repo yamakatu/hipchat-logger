@@ -32,7 +32,13 @@ log.debug "Found and loaded config file"
 log_output = ERB.new(File.read('views/splunk.erb'))
 log.debug "Found and loaded ERB template file"
 
-# STEP 1 - Connect to HipChat #############
+#############################################
+#                                           #
+#              HIPCHAT LOGGING              #
+#                                           #
+#############################################
+
+# Connect to HipChat 
 begin
   client = HipChat::Client.new(config["hipchat"]["api"]["key"])
 rescue Exception => e
@@ -45,7 +51,7 @@ log_date = (params["d"] ? params["d"] : Time.now.strftime('%Y-%m-%d'))
 
 @rooms = []
 
-# STEP 2 - Get a list of all the rooms #############
+# Get a list of all the rooms
 @rooms = client.rooms
 log.info "Getting history of all #{@rooms.count} room(s) for #{log_date}..."
 @rooms.each do |room|
@@ -59,7 +65,7 @@ log.info "Getting history of all #{@rooms.count} room(s) for #{log_date}..."
     log.debug e.message
   end
 
-  #log messages
+  # Log messages for this room 
   if room_messages.count > 0
     # Open room log file for writing
     log_file = File.open("log/hipchat_room_id_#{room.room_id}_#{log_date}.log", 'w')
