@@ -3,6 +3,7 @@
 .bundle
 .DS_Store
 .htaccess
+config/blazing.rb
 config/config.yml
 tmp/*
 *.log
